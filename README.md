@@ -1,3 +1,12 @@
+### TODO
+ - Add master_env and env into README
+ - Document and change MONGO and REDIS URIs
+ - Make it a package to get rid of composing PythonPath
+ - Add CI/CD checks into GH
+    - Maybe even publish the docker Image to GH repository???
+ - Add Makefile commands to run pipeline locally
+ - Refactor the LunarPitAtlas scraping
+
 # LunarPitsResearchToolbox
 
 A comprehensive toolkit for lunar pit mapping and simulation, developed as part of the diploma thesis in Space Applications master program on FECT-BUT. It integrates SPICE-based instrument modeling, data analysis pipelines, and simulation frameworks to process and visualize lunar remote sensing datasets.

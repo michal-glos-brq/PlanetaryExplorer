@@ -9,7 +9,6 @@ Faculty: Faculty of Electrical Engineering and Communication (FEKT)
 Diploma Thesis Project
 """
 
-
 import os
 import pvl
 import urllib
@@ -303,35 +302,36 @@ class MiniRFDataConnector(BaseDataConnector):
         max_step = min(max_step_t, max_step_l)
         min_step = SUBDIVISION_MIN_SIDE_LEN
 
-        
         def slice_data(start_id_t, stop_id_t, start_id_l, stop_id_l) -> List[Dict]:
             # pull out the block
             block = data_slice[start_id_t:stop_id_t, start_id_l:stop_id_l, :]  # shape (T_block, L_block, 4)
             # mask of non-zero pixels across all 4 channels
-            nz_mask = ~np.all(block == 0, axis=2)                               # shape (T_block, L_block)
+            nz_mask = ~np.all(block == 0, axis=2)  # shape (T_block, L_block)
             if not nz_mask.any():
                 return []  # nothing to do here
 
             # find the (i,j) subscripts of valid pixels
-            tt, ll = np.nonzero(nz_mask)                                        # both shape (N,)
+            tt, ll = np.nonzero(nz_mask)  # both shape (N,)
             # corresponding ETs and global line-indices
-            et_vals   = t[start_id_t:stop_id_t][tt]                             # shape (N,)
-            line_vals = l[start_id_l:stop_id_l][ll]                             # shape (N,)
-            chans     = block[tt, ll, :]                                        # shape (N,4)
+            et_vals = t[start_id_t:stop_id_t][tt]  # shape (N,)
+            line_vals = l[start_id_l:stop_id_l][ll]  # shape (N,)
+            chans = block[tt, ll, :]  # shape (N,4)
 
             # build your list of dicts
             recs = []
             for et_i, line_i, (c1, c2, c3, c4) in zip(et_vals, line_vals, chans):
-                recs.append({
-                    "et":    float(et_i),
-                    "mode":  mode,
-                    "line":  int(line_i),
-                    "lines": lines,
-                    "ch1":   float(c1),
-                    "ch2":   float(c2),
-                    "ch3":   float(c3),
-                    "ch4":   float(c4),
-                })
+                recs.append(
+                    {
+                        "et": float(et_i),
+                        "mode": mode,
+                        "line": int(line_i),
+                        "lines": lines,
+                        "ch1": float(c1),
+                        "ch2": float(c2),
+                        "ch3": float(c3),
+                        "ch4": float(c4),
+                    }
+                )
             return recs
 
         def cut_and_filter(start_id_t, stop_id_t, start_id_l, stop_id_l, init: bool = False) -> List[Dict]:
@@ -340,11 +340,12 @@ class MiniRFDataConnector(BaseDataConnector):
             if stop_id_t - start_id_t <= min_step or stop_id_l - start_id_l <= min_step:
                 if not init:
                     return slice_data(start_id_t, stop_id_t, start_id_l, stop_id_l)
-                
+
                 ets_edges = (t[start_id_t], t[stop_id_t - 1])
                 lines_edges = (l[start_id_l], l[stop_id_l - 1])
                 projected_points = [
-                    self._project_pixel(instrument, sub_instrument, et, line, lines) for et, line in product(ets_edges, lines_edges)
+                    self._project_pixel(instrument, sub_instrument, et, line, lines)
+                    for et, line in product(ets_edges, lines_edges)
                 ]
                 # It's small, if even one projection hits within, we take it all ...
                 for et, line in product(ets_edges, lines_edges):
@@ -359,7 +360,8 @@ class MiniRFDataConnector(BaseDataConnector):
             ets_edges = (t[start_id_t], t[center_id_t], t[stop_id_t - 1])
             lines_edges = (l[start_id_l], l[center_id_l], l[stop_id_l - 1])
             projected_points = [
-                self._project_pixel(instrument, sub_instrument, et, line, lines) for et, line in product(ets_edges, lines_edges)
+                self._project_pixel(instrument, sub_instrument, et, line, lines)
+                for et, line in product(ets_edges, lines_edges)
             ]
             within_filter_radius = np.array(
                 [filter_obj.rank_point(point.projection) < filter_obj.hard_radius for point in projected_points]
@@ -395,7 +397,7 @@ class MiniRFDataConnector(BaseDataConnector):
                 if within_filter_radius[1:, 1:].any():
                     further_cutting_arguments.append((center_id_t, stop_id_t, center_id_l, stop_id_l))
 
-                return_value = [slice_data(*args) for args in slicing_arguments] 
+                return_value = [slice_data(*args) for args in slicing_arguments]
                 return_value += [cut_and_filter(*args) for args in further_cutting_arguments]
                 return list(chain.from_iterable(return_value))
 
@@ -411,7 +413,6 @@ class MiniRFDataConnector(BaseDataConnector):
 
         self.cache = None
         return list(chain.from_iterable(return_value_list))
-
 
     def process_data_entry(
         self, data_entry: Dict, instrument: BaseInstrument, filter_obj: BaseFilter

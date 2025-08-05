@@ -22,7 +22,6 @@ from src.SPICE.kernel_utils.spice_kernels.base_kernel import BaseKernel
 logger = logging.getLogger(__name__)
 
 
-
 class AutoUpdateKernel(BaseKernel):
     """
     Kernel that automatically selects and downloads the newest file from a remote folder.
@@ -43,7 +42,7 @@ class AutoUpdateKernel(BaseKernel):
             folder_path (str): Local path where the selected kernel will be stored.
             regex (str): Regex pattern to filter relevant kernel filenames.
             keep_kernel (bool): If False, deletes the file after unloading.
-        
+
         Raises:
             ValueError: If no matching files are found.
         """
@@ -66,7 +65,6 @@ class LBLKernel(BaseKernel):
 
     Manages the download and deletion of the corresponding metadata file.
     """
-
 
     def __init__(
         self, url: str, filename: str, metadata_url: str, metadata_filename: str, keep_kernel: bool = True
@@ -117,6 +115,3 @@ class LBLKernel(BaseKernel):
             logger.debug("Deleted metadata %s", self.metadata_filename)
         else:
             logger.debug("Attempted to delete non-existing metadata %s", self.metadata_filename)
-
-
-

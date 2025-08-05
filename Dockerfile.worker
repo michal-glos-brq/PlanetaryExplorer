@@ -1,54 +1,47 @@
-FROM ubuntu:24.04
+########## BUILD ##########
+FROM python:3.9-slim AS builder
 
 WORKDIR /app
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV DEBIAN_FRONTEND=noninteractive
-ENV TZ=Europe/Prague
-ENV TERM=xterm-256color
+# Build-time environment
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=UTC \
+    TERM=xterm-256color
 
-# Install base dependencies, including software-properties-common, and configure timezone/locales
-RUN apt-get update && apt-get install -y \
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common \
-    curl \
-    cron \
-    tzdata \
-    ncurses-bin \
-    libreadline-dev \
-    bash-completion \
-    gdal-bin \
-    locales && \
-    ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
-    echo $TZ > /etc/timezone && \
-    dpkg-reconfigure --frontend noninteractive tzdata && \
-    rm -rf /var/lib/apt/lists/*
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Add deadsnakes PPA (now that software-properties-common is installed)
-RUN add-apt-repository ppa:deadsnakes/ppa -y && apt-get update
-
-# Install Python 3.9 and related packages
-RUN apt-get update && apt-get install -y \
-    python3.9 \
-    python3.9-venv \
-    python3.9-dev \
-    python3-pip && \
-    rm -rf /var/lib/apt/lists/*
-
-# Generate and update locales
-RUN locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8
-
-# Copy dependencies, scripts, and source code
-COPY poetry.lock pyproject.toml worker_entrypoint.sh /app/
-COPY src /app/src
-
-
-# Create and activate virtual environment, then install dependencies
-# This is probably stupid and now that I have moved networking from Docker, using
-# simpler base image, not requiring python venv (apt python locking of ubutnu)
+COPY poetry.lock pyproject.toml /app/
 RUN python3.9 -m venv /app/venv && \
-    /app/venv/bin/pip3 install --upgrade pip poetry && \
+    /app/venv/bin/pip install --upgrade pip poetry && \
     . /app/venv/bin/activate && poetry install --no-root
 
-# Start bash
+COPY src /app/src
+COPY worker_entrypoint.sh /app/worker_entrypoint.sh
+
+
+########## RUNTIME ##########
+FROM python:3.9-slim AS runtime
+
+WORKDIR /app
+
+ENV PYTHONUNBUFFERED=1 \
+    TZ=UTC \
+    LANG=en_US.UTF-8 \
+    PATH="/app/venv/bin:$PATH"
+
+# Install runtime deps only (includes gdal-bin if needed at runtime)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tzdata \
+    # This dude is an offender, we might want to make a separate image with this
+    # when custom elevation models are needed on-the-fly
+    gdal-bin \
+    ncurses-bin \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app /app
+
 ENTRYPOINT ["/bin/bash", "/app/worker_entrypoint.sh"]

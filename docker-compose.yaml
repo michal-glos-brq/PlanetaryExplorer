@@ -1,55 +1,53 @@
+# This docker compose serves as easy setup of all neccessary services - databases and observation tools.
+
 services:
   mongodb:
     image: mongo:6.0
     container_name: MongoDB
     ports:
-      - "27017:27017"
+      - "${MONGO_PORT}:27017"
     volumes:
       - "${MONGO_DB_VOLUME}:/data/db"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password
-
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
     restart: always
+    cpus: "${MONGO_CPU_LIMIT:-1.0}"
+    mem_limit: "${MONGO_MEM_LIMIT:-1g}"
+    networks:
+      - planetary-backend
 
   redis:
     image: redis:latest
     container_name: Redis
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     volumes:
       - "${REDIS_VOLUME}:/data"
     restart: always
     command: redis-server --save 60 1 --loglevel warning
+    cpus: "${REDIS_CPU_LIMIT:-0.50}"
+    mem_limit: "${REDIS_MEM_LIMIT:-512m}"
+    networks:
+      - planetary-backend
 
   flower:
     image: mher/flower
     container_name: Flower
     restart: always
     ports:
-      - "5555:5555"
+      - "${FLOWER_PORT}:5555"
     environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=${FLOWER_REDIS_URL}
     depends_on:
       - redis
-
-  netdata:
-    image: netdata/netdata
-    container_name: Netdata
-    ports:
-      - "19999:19999"
-    pid: host
-    privileged: true
-    cap_add:
-      - SYS_PTRACE
-      - SYS_ADMIN
-    volumes:
-      - /etc/passwd:/host/etc/passwd:ro
-      - /etc/group:/host/etc/group:ro
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - planetary-backend
 
 volumes:
   redis_data:
     driver: local
+
+networks:
+  planetary-backend:
+    driver: bridge

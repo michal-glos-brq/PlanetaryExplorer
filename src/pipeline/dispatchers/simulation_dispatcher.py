@@ -1,6 +1,6 @@
 """
 ============================================================
-Dispatcher 
+Dispatcher
 ============================================================
 
 Author: Michal Glos
@@ -19,6 +19,7 @@ from src.pipeline.app import run_remote_sensing_simulation_task
 from src.pipeline.dispatchers.base_dispatcher import BaseTaskRunner
 
 logger = logging.getLogger(__name__)
+
 
 class RemoteSensingTaskRunner(BaseTaskRunner):
     """

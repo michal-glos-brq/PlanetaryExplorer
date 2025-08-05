@@ -173,6 +173,7 @@ def aggregate_simulation_intervals(
 if __name__ == "__main__":
 
     from src.global_config import setup_logging
+
     setup_logging()
 
     parser = argparse.ArgumentParser(description="Merge simulation timestamps into time intervals.")
