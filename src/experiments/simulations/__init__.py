@@ -9,4 +9,3 @@ from .test_simulation_experiment import TestLROShortSimulationConfig
 __all__ = [
     "BaseSimulationConfig",
 ]
-

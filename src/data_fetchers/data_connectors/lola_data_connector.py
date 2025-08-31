@@ -246,7 +246,9 @@ class LOLADataConnector(BaseDataConnector):
             logger.error(f"Failed to parse LOLA data: {e}")
             self.current_file.data = pd.DataFrame()
 
-    def _get_interval_data_from_current_file(self, time_interval: TimeInterval, _: BaseInstrument, __: BaseFilter) -> List[Dict]:
+    def _get_interval_data_from_current_file(
+        self, time_interval: TimeInterval, _: BaseInstrument, __: BaseFilter
+    ) -> List[Dict]:
         data = self.current_file.data.loc[
             (self.current_file.data.et > time_interval.start_et) & (self.current_file.data.et < time_interval.end_et)
         ].copy()

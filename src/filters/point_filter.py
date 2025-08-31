@@ -9,7 +9,6 @@ Faculty: Faculty of Electrical Engineering and Communication (FEKT)
 Diploma Thesis Project
 """
 
-
 import numpy as np
 from scipy.spatial import cKDTree
 

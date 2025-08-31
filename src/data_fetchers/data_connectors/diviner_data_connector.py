@@ -181,13 +181,17 @@ class DivinerDataConnector(BaseDataConnector):
         :return: List of URLs for each day
         """
         tasks = []
-        for (year, month, day), url in tqdm(daily_urls.items(), desc="DIVINER exploring Daily URLs", disable=SUPRESS_TQDM, ncols=TQDM_NCOLS):
+        for (year, month, day), url in tqdm(
+            daily_urls.items(), desc="DIVINER exploring Daily URLs", disable=SUPRESS_TQDM, ncols=TQDM_NCOLS
+        ):
             url = urlparse(url)
             tasks.append((year, month, day, url, self.fetch_url_async(url.geturl())))
 
         minute_urls: Dict[Tuple[int, int, int, int, int], str] = defaultdict(dict)
 
-        for year, month, day, url, task in tqdm(tasks, desc="DIVINER fetching Daily URLs", disable=SUPRESS_TQDM, ncols=TQDM_NCOLS):
+        for year, month, day, url, task in tqdm(
+            tasks, desc="DIVINER fetching Daily URLs", disable=SUPRESS_TQDM, ncols=TQDM_NCOLS
+        ):
             response = task.result()
             soup = bs(response.text, "html.parser")
             for link in soup.find_all("a"):
@@ -213,7 +217,9 @@ class DivinerDataConnector(BaseDataConnector):
 
         # We obtain all the minute urls. Not to torture NAIF servers, we filter it further (with minute of tolerance to be inclusive)
         minute_urls_of_interest = {}
-        for key, value in tqdm(list(minute_urls.items()), desc="DIVINER filtering minute URLs", disable=SUPRESS_TQDM, ncols=TQDM_NCOLS):
+        for key, value in tqdm(
+            list(minute_urls.items()), desc="DIVINER filtering minute URLs", disable=SUPRESS_TQDM, ncols=TQDM_NCOLS
+        ):
             base_datefile_time_dict = {time_key: time_value for time_key, time_value in zip(astropy_time_units, key)}
             base_datafile_timestamp = Time(base_datefile_time_dict, format="ymdhms", scale="utc")
             base_datefile_timestamp_et = spice.utc2et(base_datafile_timestamp.iso)
@@ -226,11 +232,18 @@ class DivinerDataConnector(BaseDataConnector):
                 minute_urls_of_interest[key] = value
 
         lbl_tasks: List[Tuple[Dict[str, str], Future]] = []
-        for file_dict in tqdm(list(minute_urls_of_interest.values()), desc="DIVINER exploring lbl metadata", disable=SUPRESS_TQDM, ncols=TQDM_NCOLS):
+        for file_dict in tqdm(
+            list(minute_urls_of_interest.values()),
+            desc="DIVINER exploring lbl metadata",
+            disable=SUPRESS_TQDM,
+            ncols=TQDM_NCOLS,
+        ):
             lbl_tasks.append((file_dict, self.fetch_url_async(file_dict["lbl"])))
 
         virtual_files: List[VirtualFile] = []
-        for file_dict, fut in tqdm(lbl_tasks, desc="Downloading DIVINER LBL metadata", disable=SUPRESS_TQDM, ncols=TQDM_NCOLS):
+        for file_dict, fut in tqdm(
+            lbl_tasks, desc="Downloading DIVINER LBL metadata", disable=SUPRESS_TQDM, ncols=TQDM_NCOLS
+        ):
             resp = fut.result()
             meta = pvl.loads(resp.text, decoder=DatetimeToETDecoder())
             interval = TimeInterval(meta["UNCOMPRESSED_FILE"]["START_TIME"], meta["UNCOMPRESSED_FILE"]["STOP_TIME"])
@@ -267,7 +280,9 @@ class DivinerDataConnector(BaseDataConnector):
                 df.sort_values("et", inplace=True)
                 self.current_file.data = df
 
-    def _get_interval_data_from_current_file(self, time_interval: TimeInterval, _: BaseInstrument, __: BaseFilter) -> List[Dict]:
+    def _get_interval_data_from_current_file(
+        self, time_interval: TimeInterval, _: BaseInstrument, __: BaseFilter
+    ) -> List[Dict]:
         # We assume the file is parsed, as is implemented in _load_next_file method logic
         data = self.current_file.data.loc[
             (self.current_file.data.et > time_interval.start_et) & (self.current_file.data.et < time_interval.end_et)

@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# see .env for the environment variables
+# see .env_example for the environment variables
+# set them in your own .env file
 
 WORKER_ID=${HOSTNAME}
 SUPRESS_TQDM=1
-
 
 # Run the Celery app
 echo "🚀 Launching Celery worker with ID: $WORKER_ID"
@@ -16,4 +16,3 @@ celery -A src.pipeline.app:app worker \
     --loglevel=info \
     --concurrency="$CONCURRENCY" \
     -E
-
