@@ -20,7 +20,7 @@ worker-start:
   		worker --loglevel=$(if $(LOG_LEVEL),$(LOG_LEVEL),INFO) || true
 
 format:
-	@poetry run black . --quiet
+	@poetry run black .
 
 lint:
 	@poetry run pylint src || true

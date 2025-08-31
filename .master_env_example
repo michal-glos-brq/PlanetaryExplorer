@@ -1,27 +1,27 @@
 # Instead of sourcing .env, source this file for master node
 
-MASTER_IP='localhost'
+MASTER_IP=localhost
 
-MASTER_VOLUME="/media/mglos/HDD_8TB15"
-WORKER_UTILITY_VOLUME="${MASTER_VOLUME}/TMP"
+MASTER_VOLUME=/media/mglos/HDD_8TB15
+WORKER_UTILITY_VOLUME=${MASTER_VOLUME}/TMP
 
-MONGO_DB_VOLUME="${MASTER_VOLUME}/MONGO"
-MONGO_USER="admin"
-MONGO_PASS="password"
+MONGO_DB_VOLUME=${MASTER_VOLUME}/MONGO
+MONGO_USER=admin
+MONGO_PASS=password
 MONGO_PORT=27017
 # Sometimes requires a lot for lots of writes
 MONGO_CPU_LIMIT=4.0
 MONGO_MEM_LIMIT=8g
 
-REDIS_VOLUME="${MASTER_VOLUME}/REDIS"
-REDIS_USER="admin"
-REDIS_PASS="password"
+REDIS_VOLUME=${MASTER_VOLUME}/REDIS
+REDIS_USER=admin
+REDIS_PASS=password
 REDIS_PORT=6379
 REDIS_CPU_LIMIT=1
 REDIS_MEM_LIMIT=2g
 
 FLOWER_PORT=5555
-FLOWER_REDIS_URL="redis://redis:${REDIS_PORT}/0"
+FLOWER_REDIS_URL=redis://redis:${REDIS_PORT}/0
 
 # Usefull for local pipeline runs
 WORKER_ID=Master

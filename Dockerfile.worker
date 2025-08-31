@@ -10,8 +10,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    software-properties-common \
-    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 COPY poetry.lock pyproject.toml /app/
@@ -36,8 +34,6 @@ ENV PYTHONUNBUFFERED=1 \
 # Install runtime deps only (includes gdal-bin if needed at runtime)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tzdata \
-    # This dude is an offender, we might want to make a separate image with this
-    # when custom elevation models are needed on-the-fly
     gdal-bin \
     ncurses-bin \
     && rm -rf /var/lib/apt/lists/*
